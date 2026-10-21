@@ -1,0 +1,26 @@
+# =============================================================
+# SonarQube Community Edition - SAST local (Workshop 2, Chapitre 2)
+# Lancement :  docker compose up -d
+# Interface  :  http://localhost:9000  (admin / admin au 1er login)
+# Arret      :  docker compose down
+# =============================================================
+services:
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube-workshop2
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:h2:mem:sonar;DB_CLOSE_DELAY=-1
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

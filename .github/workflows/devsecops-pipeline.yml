@@ -1,0 +1,165 @@
+# =============================================================
+# Workshop 2 - Groupe 8
+# Pipeline DevSecOps : Build/Tests -> SAST -> SCA -> Security Gate
+# (Chapitre 2 : SAST / Chapitre 3 : SCA)
+# =============================================================
+name: DevSecOps Pipeline (SAST + SCA)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write   # pour l'upload SARIF (onglet Security)
+
+jobs:
+
+  # -------------------------------------------------------------
+  # 1. BUILD & TESTS - le projet doit compiler sans erreur
+  # -------------------------------------------------------------
+  build-and-test:
+    name: "1. Build & Tests (Maven)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compilation + tests unitaires (mvn clean verify)
+        run: mvn -B clean verify
+
+      - name: Upload du JAR compile
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-jar
+          path: target/*.jar
+
+  # -------------------------------------------------------------
+  # 2. SAST - Analyse statique du code source avec Semgrep
+  #    (OWASP Top 10, Security Audit, Secrets)
+  # -------------------------------------------------------------
+  sast-semgrep:
+    name: "2. SAST - Semgrep"
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Scan Semgrep (owasp-top-ten, security-audit, secrets)
+        run: |
+          semgrep scan \
+            --config p/owasp-top-ten \
+            --config p/security-audit \
+            --config p/secrets \
+            --json --output semgrep-results.json \
+            --sarif --output semgrep-results.sarif \
+            --metrics=off \
+            . || true
+
+      - name: Resume des findings Semgrep
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          try:
+              with open("semgrep-results.json") as f:
+                  data = json.load(f)
+              results = data.get("results", [])
+              print(f"Semgrep : {len(results)} finding(s) detecte(s)")
+              for r in results[:20]:
+                  print(f"  [{r.get('extra', {}).get('severity', '?')}] "
+                        f"{r.get('path')}:{r.get('start', {}).get('line', '?')} - "
+                        f"{r.get('check_id', '')}")
+          except Exception as e:
+              print("Resume impossible :", e)
+          PYEOF
+
+      - name: Upload du rapport Semgrep (JSON + SARIF)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-report
+          path: |
+            semgrep-results.json
+            semgrep-results.sarif
+
+      - name: Publication dans l'onglet Security (Code scanning)
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true   # necessite un depot public ou GitHub Advanced Security
+        with:
+          sarif_file: semgrep-results.sarif
+
+  # -------------------------------------------------------------
+  # 3. SCA - Analyse des dependances avec OWASP Dependency-Check
+  #    Detecte les CVE (ex : Log4Shell) dans les librairies
+  # -------------------------------------------------------------
+  sca-dependency-check:
+    name: "3. SCA - OWASP Dependency-Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Analyse des dependances (OWASP Dependency-Check)
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn -B -Psecurity-sca dependency-check:check
+
+      - name: Upload du rapport Dependency-Check (HTML + JSON)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: |
+            target/dependency-check-report.html
+            target/dependency-check-report.json
+
+  # -------------------------------------------------------------
+  # 4. SECURITY GATE - "Risk acceptance gate" (cf. Chapitre 2)
+  #    FAIL si : 1 vulnerabilite CRITIQUE, > 5 HIGH, ou secrets commits
+  #    Le gate passe au vert apres correction des vulnerabilites.
+  # -------------------------------------------------------------
+  security-gate:
+    name: "4. Security Gate"
+    needs: [build-and-test, sast-semgrep, sca-dependency-check]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout (script du gate)
+        uses: actions/checkout@v4
+
+      - name: Download du rapport Semgrep
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: semgrep-report
+          path: reports/semgrep
+
+      - name: Download du rapport Dependency-Check
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: dependency-check-report
+          path: reports/odc
+
+      - name: Evaluation du niveau de risque
+        run: python3 scripts/security_gate.py

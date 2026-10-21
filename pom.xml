@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.groupe8</groupId>
+    <artifactId>workshop2-devsecops</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Workshop 2 - DevSecOps (SAST &amp; SCA)</name>
+    <description>
+        Projet pedagogique contenant des vulnerabilites intentionnelles
+        (injection SQL, XSS, command injection, secrets hardcodes, crypto faible...)
+        et des dependances vulnerables (Log4Shell, Text4Shell...).
+        Utilise pour le Workshop 2 : SAST (SonarQube / Semgrep) + SCA
+        (Dependabot / OWASP Dependency-Check).
+    </description>
+
+    <properties>
+        <maven.compiler.release>11</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Versions VOLONTAIREMENT VULNERABLES (pedagogie DevSecOps) -->
+        <log4j2.version>2.14.1</log4j2.version>          <!-- CVE-2021-44228 : Log4Shell -->
+        <jackson.version>2.9.8</jackson.version>         <!-- Failles de deserialisation -->
+        <commons-text.version>1.9</commons-text.version>  <!-- CVE-2022-42889 : Text4Shell -->
+        <h2.version>1.4.200</h2.version>                  <!-- CVE-2022-23221 -->
+    </properties>
+
+    <dependencies>
+        <!-- Logging : Log4j 2.14.1 = Log4Shell (CVE-2021-44228) -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+
+        <!-- JSON : Jackson 2.9.8 = deserialisation polymorphe dangereuse -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- Texte : commons-text 1.9 = Text4Shell (CVE-2022-42889) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons-text.version}</version>
+        </dependency>
+
+        <!-- Base de donnees en memoire pour la demo d'injection SQL -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+
+        <!-- Tests unitaires -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.groupe8.workshop2.App</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- ============================================================
+             SCA : OWASP Dependency-Check
+             Usage : mvn -Psecurity-sca dependency-check:check
+             (optionnel) : -DnvdApiKey=VOTRE_CLE_NVD
+             ============================================================ -->
+        <profile>
+            <id>security-sca</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>10.0.4</version>
+                        <configuration>
+                            <formats>
+                                <format>HTML</format>
+                                <format>JSON</format>
+                            </formats>
+                            <failBuildOnCVSS>0</failBuildOnCVSS>
+                            <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <!-- Cle NVD (recommandee pour eviter le rate-limiting) -->
+                            <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ============================================================
+             SAST : SonarQube (serveur local via Docker, voir README)
+             Usage : mvn -Psonar sonar:sonar -Dsonar.host.url=http://localhost:9000
+             ============================================================ -->
+        <profile>
+            <id>sonar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>4.0.0.4389</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
