@@ -337,28 +337,3 @@ Ce workshop montre l'intérêt d'une approche **DevSecOps** :
 ![9. Rapport Dependency-Check](docs/screenshots/09-rapport-dependency-check.png)
 
 ---
-
-## 🚀 Guide pas à pas
-
-1. **Récupérer le projet** ce dépôt en local.
-2. **Créer le dépôt GitHub** nommé exactement `workshop2-Groupe8` (private + inviter le prof).
-3. **Pousser le code** (commandes dans la section suivante).
-4. **Activer Dependabot** : *Settings → Code security →* tout activer.
-5. *(Optionnel)* Ajouter le secret `NVD_API_KEY` pour accélérer le SCA.
-6. Vérifier la **pipeline** dans l'onglet *Actions* (4 jobs).
-7. Lancer **SonarQube** (`docker compose up -d`) et `mvn -Psonar sonar:sonar`.
-8. Prendre les **captures d'écran** (cf. tableau ci-dessus).
-9. Appliquer les **corrections** (`docs/CORRECTIONS.md`) → commit → gate ✅.
-10. Mettre à jour ce **rapport**, puis soumettre le lien du dépôt sur **Google Classroom**.
-
-```bash
-git init
-git add .
-git commit -m "Workshop 2 - Groupe 8 : pipeline DevSecOps (SAST + SCA)"
-git branch -M main
-git remote add origin https://github.com/VOTRE-UTILISATEUR/workshop2-Groupe8.git
-git push -u origin main
-```
-
----
-
