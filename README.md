@@ -362,16 +362,3 @@ git push -u origin main
 
 ---
 
-## ✅ Checklist de soumission
-
-- [ ] Dépôt GitHub nommé **`workshop2-Groupe8`**
-- [ ] Le projet **compile sans erreur** (`mvn clean verify` ✔)
-- [ ] **Workflow / pipeline** présent et fonctionnel (onglet Actions)
-- [ ] **Dependabot** configuré (`.github/dependabot.yml` + alertes activées)
-- [ ] **Rapport** complété dans ce README
-- [ ] **Captures d'écran** ajoutées (pipeline, Semgrep, SonarQube, Dependency-Check, Dependabot, gate)
-- [ ] Lien du dépôt envoyé sur **Google Classroom** avant la date limite ⏰
-
----
-
-*Workshop 2 — DevSecOps · Chapitre 2 (SAST) & Chapitre 3 (SCA) · Groupe 8*
