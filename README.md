@@ -1,12 +1,10 @@
-# 🛡️ Workshop 2 — DevSecOps (Chapitres 2 & 3) — Groupe 8
+# 🛡️ Workshop 2 — DevSecOps — Groupe 8
 
 [![Pipeline](https://github.com/VOTRE-UTILISATEUR/workshop2-Groupe8/actions/workflows/devsecops-pipeline.yml/badge.svg)](../../actions/workflows/devsecops-pipeline.yml)
 [![Java](https://img.shields.io/badge/Java-17-ED8B00)](https://openjdk.org/)
 [![Maven](https://img.shields.io/badge/Maven-3.9-C71A36)](https://maven.apache.org/)
 
-> **Sécurité du code source (SAST) & Sécurité des dépendances (SCA)**
-> Projet pédagogique contenant des **vulnérabilités intentionnelles**, détectées puis
-> corrigées à l'aide d'une pipeline DevSecOps.
+
 
 ---
 
@@ -32,8 +30,7 @@
 | **2** — Sécurité du code source | **SAST** (Static Application Security Testing) | **SonarQube** (Docker), **Semgrep** | Détecter injections, XSS, mauvaises pratiques ; comprendre les limites et complémentarités des outils |
 | **3** — Sécurité des dépendances | **SCA** (Software Composition Analysis) | **Dependabot**, **OWASP Dependency-Check** | Détecter les CVE des bibliothèques (Log4Shell…) et automatiser les mises à jour |
 
-**Compétences travaillées :** OWASP Top 10 (2025), pipeline SAST avec security gates,
-analyse taint/patterns/règles, inventaire de dépendances, CVSS, Shift-Left.
+
 
 ---
 
