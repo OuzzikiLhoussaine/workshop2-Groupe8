@@ -119,8 +119,8 @@ jobs:
           java-version: '17'
           cache: maven
 
-      # 1. GitHub cache to store the built H2 database for subsequent runs
-      - name: Cache OWASP H2 Database
+      - name: Cache des donnees OWASP Dependency-Check
+        id: dependency-check-cache
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
@@ -128,13 +128,16 @@ jobs:
           restore-keys: |
             odc-h2-${{ runner.os }}-
 
-      # 2. Run analysis using the official OWASP GitHub Pages datafeed mirror
+      - name: Pre-seed du miroir NVD (cold start)
+        if: steps.dependency-check-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.m2/repository/org/owasp/dependency-check-data
+          curl -sSL "https://github.com/diktamen/nvd-mirror/releases/download/nvd-data-latest/nvd-database.tar.gz" | tar -xz -C ~/.m2/repository/org/owasp/dependency-check-data/
+
       - name: Analyse des dependances (OWASP Dependency-Check)
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: |
-          mvn -B -Psecurity-sca dependency-check:check \
-            -DnvdDatafeedUrl="https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/nvdcve-{0}.json.gz"
+        run: mvn -B -Psecurity-sca dependency-check:check -DnvdDatafeedUrl="https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/nvdcve-{0}.json.gz"
 
       - name: Upload du rapport Dependency-Check (HTML + JSON)
         uses: actions/upload-artifact@v4
