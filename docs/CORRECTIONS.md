@@ -198,10 +198,10 @@ public String renderErrorPage(Exception e) {
 
 | Bibliothèque | Version vulnérable | Version corrigée |
 |---|---|---|
-| `log4j-core` / `log4j-api` | 2.14.1 | **2.17.1+** |
-| `commons-text` | 1.9 | **1.10.0+** |
-| `jackson-databind` | 2.9.8 | **2.17+** |
-| `h2` | 1.4.200 | **2.2.224+** |
+| `log4j-core` / `log4j-api` | 2.14.1 | **2.26.1** |
+| `commons-text` | 1.9 | **1.15.0** |
+| `jackson-databind` | 2.9.8 | **2.22.4** |
+| `h2` | 1.4.200 | **2.5.252** |
 
 > 💡 **Dependabot** peut faire ces montées de version automatiquement via des Pull
 > Requests : c'est tout l'objet de `.github/dependabot.yml`.
