@@ -105,7 +105,7 @@ jobs:
   # 3. SCA - Analyse des dependances avec OWASP Dependency-Check
   #    Detecte les CVE (ex : Log4Shell) dans les librairies
   # -------------------------------------------------------------
- sca-dependency-check:
+  sca-dependency-check:
     name: "3. SCA - OWASP Dependency-Check"
     runs-on: ubuntu-latest
     steps:
@@ -119,25 +119,18 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Cache des donnees OWASP Dependency-Check
-        id: dependency-check-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: odc-h2-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            odc-h2-${{ runner.os }}-
-
-      - name: Pre-seed du miroir NVD (cold start)
-        if: steps.dependency-check-cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ~/.m2/repository/org/owasp/dependency-check-data
-          curl -sSL "https://github.com/diktamen/nvd-mirror/releases/download/nvd-data-latest/nvd-database.tar.gz" | tar -xz -C ~/.m2/repository/org/owasp/dependency-check-data/
-
       - name: Analyse des dependances (OWASP Dependency-Check)
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: mvn -B -Psecurity-sca dependency-check:check -DnvdDatafeedUrl="https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/nvdcve-{0}.json.gz"
+        run: |
+          if [ -n "$NVD_API_KEY" ]; then
+            # Avec cle NVD : API officielle (rapide)
+            mvn -B -Psecurity-sca dependency-check:check
+          else
+            # Sans cle : miroir NVD (datafeed) - fonctionne sans cle API
+            mvn -B -Psecurity-sca dependency-check:check \
+              -DnvdDatafeedUrl="https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/nvdcve-{0}.json.gz"
+          fi
 
       - name: Upload du rapport Dependency-Check (HTML + JSON)
         uses: actions/upload-artifact@v4
