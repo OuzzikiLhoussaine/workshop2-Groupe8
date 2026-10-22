@@ -3,21 +3,26 @@ package com.groupe8.workshop2.crypto;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * VULNERABILITE INTENTIONNELLE N°6 - Cryptographie faible (OWASP A04:2025, CWE-328).
  *
- * MD5 est un algorithme de hachage casse : il ne faut JAMAIS l'utiliser
- * pour stocker des mots de passe (rainbow tables, collisions).
+ * Les mots de passe sont haches avec SHA-256 et un sel aleatoire.
  */
 public class PasswordUtil {
 
-    /** VULNERABLE : hachage MD5 pour les mots de passe. */
+    private static final int SALT_LENGTH = 16;
+    private final SecureRandom secureRandom = new SecureRandom();
+
     public String hashPasswordWeak(String password) {
+        byte[] salt = new byte[SALT_LENGTH];
+        secureRandom.nextBytes(salt);
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(salt);
             byte[] digest = md.digest(password.getBytes(StandardCharsets.UTF_8));
-            return toHex(digest);
+            return toHex(salt) + ":" + toHex(digest);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }

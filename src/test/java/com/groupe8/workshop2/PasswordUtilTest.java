@@ -32,8 +32,12 @@ class PasswordUtilTest {
     }
 
     @Test
-    void hashPasswordWeak_isMd5Length() {
-        // Documente la faiblesse : MD5 = 32 caracteres seulement
-        assertEquals(32, passwordUtil.hashPasswordWeak("motdepasse").length());
+    void hashPasswordWeak_usesRandomSaltAndSha256() {
+        String hash1 = passwordUtil.hashPasswordWeak("motdepasse");
+        String hash2 = passwordUtil.hashPasswordWeak("motdepasse");
+
+        assertNotEquals(hash1, hash2);
+        assertEquals(97, hash1.length(), "sel de 16 octets + ':' + SHA-256 en hexadecimal");
+        assertTrue(hash1.matches("[0-9a-f]{32}:[0-9a-f]{64}"));
     }
 }

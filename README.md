@@ -50,17 +50,17 @@ gabarits de messages). Elle contient **9 vulnérabilités intentionnelles** et
 | 4 | `web/CommandRunner.java` | **Command Injection** (`Runtime.exec`) | CWE-78, OWASP A05 |
 | 5 | `config/Credentials.java` | **Secrets hardcodés** (password, clés API) | CWE-798, OWASP A02 |
 | 6 | `crypto/PasswordUtil.java` | **Crypto faible** (MD5 pour mots de passe) | CWE-328, OWASP A04 |
-| 7 | `config/JsonConfigLoader.java` | **Désérialisation non sûre** (`enableDefaultTyping`) | CWE-502, OWASP A08 |
+| 7 | `config/JsonConfigLoader.java` | **Désérialisation JSON sûre** (arbre `JsonNode`, sans typage polymorphe) | CWE-502, OWASP A08 |
 | 8 | `web/MessageTemplate.java` | **Text4Shell** (substitution non fiable) | CVE-2022-42889 |
-| 9 | `web/ErrorHandler.java` | **Mauvaise gestion des erreurs** (stack trace exposée, exceptions avalées) | OWASP A09/A10 |
+| 9 | `web/ErrorHandler.java` | **Gestion sûre des erreurs** (journalisation serveur, message générique) | OWASP A09/A10 |
 
 ### Dépendances vulnérables (SCA)
 
 | Bibliothèque | Version | Vulnérabilité |
 |---|---|---|
-| `log4j-core` | 2.14.1 | **CVE-2021-44228 (Log4Shell)** — CVSS 10.0 |
+| `log4j-core` | 2.17.1 | Version corrigée de Log4j |
 | `commons-text` | 1.9 | **CVE-2022-42889 (Text4Shell)** — CVSS 9.8 |
-| `jackson-databind` | 2.9.8 | Failles de désérialisation polymorphe |
+| `jackson-databind` | 2.17.2 | Version corrigée, sans typage polymorphe |
 | `h2` | 1.4.200 | CVE connues (contournement d'authentification) |
 
 ### Arborescence
@@ -221,10 +221,8 @@ Le job CI `sca-dependency-check` produit le même rapport (artefact `dependency-
 
 | CVE | Bibliothèque | CVSS | Gravité |
 |---|---|---|---|
-| CVE-2021-44228 (Log4Shell) | log4j-core 2.14.1 | 10.0 | 🔴 Critique |
 | CVE-2022-42889 (Text4Shell) | commons-text 1.9 | 9.8 | 🔴 Critique |
 | CVE-2022-23221 (+ autres) | h2 1.4.200 | 9.8 | 🔴 Critique |
-| CVE désérialisation | jackson-databind 2.9.8 | 5.x–8.x | 🟠 High |
 
 ---
 
@@ -274,8 +272,8 @@ Résumé des correctifs (détails code avant/après dans [`docs/CORRECTIONS.md`]
 | Command Injection | `ProcessBuilder` avec liste d'arguments + liste blanche d'hôtes |
 | Secrets hardcodés | Variables d'environnement / secret store |
 | MD5 | SHA-256 + sel (BCrypt recommandé pour mots de passe) |
-| Désérialisation | Suppression de `enableDefaultTyping`, validation des types |
-| Log4Shell | montée de version `log4j-core` **2.17.1+** |
+| Désérialisation | Lecture en arbre `JsonNode`, sans typage polymorphe |
+| Log4Shell | logs paramétrés + montée de version `log4j-core` **2.17.1+** |
 | Text4Shell | montée de version `commons-text` **1.10.0+** |
 | Gestion des erreurs | Journalisation + message d'erreur générique côté client |
 

@@ -30,4 +30,20 @@ class HtmlRendererTest {
     void escapeHtml_escapesQuotesAndAmpersand() {
         assertEquals("a &amp; b &quot;c&quot; &#39;d&#39;", renderer.escapeHtml("a & b \"c\" 'd'"));
     }
+
+    @Test
+    void renderWelcomePage_escapesUsername() {
+        String rendered = renderer.renderWelcomePage("<script>alert(1)</script>");
+
+        assertFalse(rendered.contains("<script>"));
+        assertTrue(rendered.contains("&lt;script&gt;alert(1)&lt;/script&gt;"));
+    }
+
+    @Test
+    void renderSearchResult_escapesUserQuery() {
+        String rendered = renderer.renderSearchResult("<img src=x onerror=alert(1)>");
+
+        assertFalse(rendered.contains("<img"));
+        assertTrue(rendered.contains("&lt;img src=x onerror=alert(1)&gt;"));
+    }
 }

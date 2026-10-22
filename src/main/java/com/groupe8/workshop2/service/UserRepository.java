@@ -2,6 +2,7 @@ package com.groupe8.workshop2.service;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -44,15 +45,17 @@ public class UserRepository {
      * VULNERABLE : concatenation directe de {@code name} dans la requete SQL.
      */
     public List<String> findUsersByName(String name) throws SQLException {
-        String query = "SELECT name, email FROM users WHERE name = '" + name + "'";
-        List<String> results = new ArrayList<>();
-        try (Connection c = getConnection();
-             Statement st = c.createStatement();
-             ResultSet rs = st.executeQuery(query)) {
+    String query = "SELECT name, email FROM users WHERE name = ?";
+    List<String> results = new ArrayList<>();
+    try (Connection c = getConnection();
+         PreparedStatement ps = c.prepareStatement(query)) {
+        ps.setString(1, name);           // paramètre lié → injection impossible
+        try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 results.add(rs.getString("name") + " <" + rs.getString("email") + ">");
             }
         }
-        return results;
     }
+    return results;
+}
 }

@@ -83,18 +83,14 @@ public String pingHost(String host) throws IOException {
 **Avant** :
 
 ```java
-public static final String ADMIN_PASSWORD = "Admin@12345";
+public static final String ADMIN_PASSWORD = "<mot-de-passe-compromis>";
 ```
 
 **Après** — variables d'environnement / vault :
 
 ```java
 public static String adminPassword() {
-    String pwd = System.getenv("ADMIN_PASSWORD");
-    if (pwd == null || pwd.isEmpty()) {
-        throw new IllegalStateException("ADMIN_PASSWORD non configurée");
-    }
-    return pwd;
+    return required("ADMIN_PASSWORD");
 }
 ```
 
@@ -132,8 +128,8 @@ mapper.enableDefaultTyping();          // typage polymorphe dangereux
 **Après** :
 
 ```java
-// Supprimer enableDefaultTyping() et désérialiser vers des types précis :
-mapper.readValue(json, MonConfig.class);
+// Supprimer enableDefaultTyping() et lire vers un type précis :
+JsonNode config = mapper.readTree(json);
 // + mettre jackson-databind à jour (2.17+)
 ```
 
@@ -144,7 +140,7 @@ mapper.readValue(json, MonConfig.class);
 **Code — Avant** :
 
 ```java
-logger.info("Recherche utilisateur : " + query);
+logger.info("Recherche utilisateur : {}", query);
 ```
 
 **Code — Après** :
@@ -156,7 +152,7 @@ logger.info("Recherche utilisateur : {}", query);   // paramètre lié, pas de c
 **Dépendance — `pom.xml`** :
 
 ```xml
-<log4j2.version>2.17.1</log4j2.version>   <!-- était 2.14.1 (Log4Shell) -->
+<log4j2.version>2.17.1</log4j2.version>
 ```
 
 ---
