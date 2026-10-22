@@ -95,7 +95,7 @@ jobs:
             semgrep-results.sarif
 
       - name: Publication dans l'onglet Security (Code scanning)
-        uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         if: always()
         continue-on-error: true   # necessite un depot public ou GitHub Advanced Security
         with:
