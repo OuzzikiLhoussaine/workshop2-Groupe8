@@ -229,9 +229,3 @@ updates:
 
 ---
 
-## ✅ Validation finale
-
-1. `mvn clean verify` → compile sans erreur
-2. `mvn -Psecurity-sca dependency-check:check` → 0 CVE critique
-3. Pipeline GitHub Actions → **Security Gate ✅ PASS**
-4. Capture d'écran du gate vert → dans le README
