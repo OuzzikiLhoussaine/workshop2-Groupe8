@@ -1,6 +1,6 @@
 # 🛡️ Workshop 2 — DevSecOps — Groupe 8
 
-[![Pipeline](https://github.com/VOTRE-UTILISATEUR/workshop2-Groupe8/actions/workflows/devsecops-pipeline.yml/badge.svg)](../../actions/workflows/devsecops-pipeline.yml)
+[![Pipeline](https://github.com/ouzzikilhoussaine/workshop2-Groupe8/actions/workflows/devsecops-pipeline.yml/badge.svg)](../../actions/workflows/devsecops-pipeline.yml)
 [![Java](https://img.shields.io/badge/Java-17-ED8B00)](https://openjdk.org/)
 [![Maven](https://img.shields.io/badge/Maven-3.9-C71A36)](https://maven.apache.org/)
 
