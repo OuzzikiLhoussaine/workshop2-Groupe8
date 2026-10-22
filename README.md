@@ -327,6 +327,5 @@ Ce workshop montre l'intérêt d'une approche **DevSecOps** :
 
 ![8. Dependabot](docs/screenshots/08-dependabot-alerte.png)
 
-![9. Rapport Dependency-Check](docs/screenshots/09-rapport-dependency-check.png)
 
 ---
