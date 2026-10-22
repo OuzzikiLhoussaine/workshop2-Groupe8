@@ -59,7 +59,8 @@ if semgrep_json.exists():
             medium_low_count += 1
             add_detail("Semgrep", "MEDIUM/LOW", f"{location} - {check_id}")
 else:
-    print("ATTENTION : rapport Semgrep introuvable.")
+    print("ERREUR : rapport Semgrep introuvable (le scan SAST n'a pas produit de rapport).")
+    add_detail("Pipeline", "MISSING", "rapport Semgrep introuvable")
 
 # --- 2. Analyse du rapport OWASP Dependency-Check (SCA) -------------
 if odc_json.exists():
@@ -86,13 +87,18 @@ if odc_json.exists():
                 medium_low_count += 1
                 add_detail("Dependency-Check", "MEDIUM/LOW", msg)
 else:
-    print("ATTENTION : rapport Dependency-Check introuvable.")
+    print("ERREUR : rapport Dependency-Check introuvable (le scan SCA n'a pas produit de rapport).")
+    add_detail("Pipeline", "MISSING", "rapport Dependency-Check introuvable")
 
 # --- 3. Decision (gate) --------------------------------------------
+missing_reports = any(tool == "Pipeline" for tool, _, _ in details)
+
+# Un rapport manquant = FAIL (sinon un scan en echec passerait au vert)
 failed = (
     critical_count > MAX_CRITICAL
     or high_count > MAX_HIGH
     or (BLOCK_ON_SECRETS and secret_count > 0)
+    or missing_reports
 )
 
 summary = [
