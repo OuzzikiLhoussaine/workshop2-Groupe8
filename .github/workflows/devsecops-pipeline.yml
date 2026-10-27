@@ -127,7 +127,12 @@ jobs:
         run: |
           if [ -n "$NVD_API_KEY" ]; then
             # Avec cle NVD : API officielle (rapide)
-            mvn -B -Psecurity-sca dependency-check:check
+            if ! mvn -B -Psecurity-sca dependency-check:check; then
+              echo "Echec avec NVD_API_KEY, fallback vers le datafeed public."
+              unset NVD_API_KEY
+              mvn -B -Psecurity-sca dependency-check:check \
+                -DnvdDatafeedUrl="https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/nvdcve-{0}.json.gz"
+            fi
           else
             # Sans cle : miroir NVD (datafeed) - fonctionne sans cle API
             mvn -B -Psecurity-sca dependency-check:check \
